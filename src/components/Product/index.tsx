@@ -1,14 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import cx from 'classnames';
-
 import Button from '../Button/index';
 import Quantity from '../Quantity/index';
-
 import { getImage } from '../../utils/images';
-
 import styles from './Product.module.scss';
 import { IProduct } from '../../hooks/useAppContext';
 import imageTypes from '../../constants/imageTypes';
+import ProductModal from '../ProductModal';
 
 interface IProductProps extends IProduct {
   isAdded?: boolean;
@@ -31,8 +29,11 @@ const Product: React.FC<IProductProps> = ({
   onIncrement,
   price,
   title,
+  description,
 }) => {
   const isInCart = onIncrement && onDecrement;
+  const [modalVisible, setModalVisible] = useState(false);
+
   const productClasses = cx(className, styles.product, {
     [styles.inProductLanding]: !isInCart,
     [styles.inCart]: isInCart,
@@ -45,12 +46,25 @@ const Product: React.FC<IProductProps> = ({
     : getImage(images);
   const finalPrice = (price * count).toFixed(2);
 
+  const toggleModal = () => {
+    console.log('Toggling modal...');
+    console.log('Current modalVisible state:', modalVisible);
+    setModalVisible(!modalVisible);
+  };
+
   return (
     <div className={productClasses}>
-      <img className={styles.image} src={imageSrc} alt={title} />
+      <img
+        className={styles.image}
+        src={imageSrc}
+        alt={title}
+        onClick={toggleModal}
+      />
       <div className={styles.details}>
         <div className={styles.text}>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 className={styles.title} onClick={toggleModal}>
+            {title}
+          </h2>
           <span className={styles.price}>${finalPrice}</span>
         </div>
         {isInCart ? (
@@ -71,6 +85,17 @@ const Product: React.FC<IProductProps> = ({
           )
         )}
       </div>
+      {modalVisible && (
+        <ProductModal
+          product={{
+            title: title || '',
+            images: images?.map((image) => image.src) || [],
+            description: description || '',
+            price: price || 0,
+          }}
+          onClose={toggleModal}
+        />
+      )}
     </div>
   );
 };
